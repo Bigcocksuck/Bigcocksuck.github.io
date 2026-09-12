@@ -21,7 +21,7 @@
 
         .welcome {
             text-align: center;
-            padding: 70px 20px 50px;
+            padding: 50px 20px 30px;
         }
 
         .welcome h1 {
@@ -32,6 +32,24 @@
         .welcome p {
             font-size: 20px;
             color: #b9c9ff;
+        }
+
+        .code-button {
+            display: block;
+            width: fit-content;
+            margin: 20px auto 40px;
+            padding: 12px 22px;
+            background: #4d8dff;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .code-button:hover {
+            background: #70a6ff;
+            transform: scale(1.05);
         }
 
         .upload-box {
@@ -119,12 +137,20 @@
 
 <body>
 
+    <!-- Welcome -->
     <section class="welcome">
         <h1>🖼️ Welcome to My Image Board!</h1>
         <p>Upload your favorite pictures and create your own collection.</p>
     </section>
 
+    <!-- Code Button -->
+    <a href="code.html" class="code-button">
+        💻 View My Code
+    </a>
+
+    <!-- Upload -->
     <div class="upload-box">
+
         <label for="imageInput">
             ➕ Add an Image
         </label>
@@ -132,84 +158,142 @@
         <input type="file" id="imageInput" accept="image/*">
 
         <p>Your images will be saved automatically 💾</p>
+
     </div>
 
+    <!-- Image Board -->
     <div id="imageBoard">
+
         <div class="empty" id="emptyMessage">
             Your image board is empty. Add your first picture! 📸
         </div>
+
     </div>
 
     <script>
+
         const input = document.getElementById("imageInput");
         const board = document.getElementById("imageBoard");
         const emptyMessage = document.getElementById("emptyMessage");
 
-        let savedImages = JSON.parse(localStorage.getItem("myImages")) || [];
+        let savedImages =
+            JSON.parse(localStorage.getItem("myImages")) || [];
+
 
         function showImages() {
-            board.querySelectorAll(".image-card").forEach(card => card.remove());
+
+            board.querySelectorAll(".image-card")
+                .forEach(card => card.remove());
+
 
             if (savedImages.length === 0) {
+
                 emptyMessage.style.display = "block";
+
             } else {
+
                 emptyMessage.style.display = "none";
+
             }
 
+
             savedImages.forEach(function(image, index) {
+
                 const card = document.createElement("div");
+
                 card.className = "image-card";
 
+
                 const img = document.createElement("img");
+
                 img.src = image;
 
-                const deleteButton = document.createElement("button");
+
+                const deleteButton =
+                    document.createElement("button");
+
                 deleteButton.className = "delete-btn";
+
                 deleteButton.textContent = "🗑️ Delete";
 
+
                 deleteButton.addEventListener("click", function() {
+
                     savedImages.splice(index, 1);
 
+
                     localStorage.setItem(
                         "myImages",
                         JSON.stringify(savedImages)
                     );
 
+
                     showImages();
+
                 });
 
+
                 card.appendChild(img);
+
                 card.appendChild(deleteButton);
+
                 board.appendChild(card);
+
             });
+
         }
 
+
         input.addEventListener("change", function() {
+
             const file = input.files[0];
 
+
             if (file) {
+
                 const reader = new FileReader();
 
+
                 reader.onload = function(event) {
+
                     savedImages.push(event.target.result);
+
 
                     localStorage.setItem(
                         "myImages",
                         JSON.stringify(savedImages)
                     );
 
+
                     showImages();
+
                 };
+
 
                 reader.readAsDataURL(file);
 
+
                 input.value = "";
+
             }
+
         });
 
+
         showImages();
+
     </script>
 
 </body>
 </html>
 ```
+
+Make sure your files are arranged like this:
+
+```text
+📁 Your Website
+   ├── index.html
+   └── code.html
+```
+
+Then clicking **💻 View My Code** on `index.html` will open your `code.html`.
