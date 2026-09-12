@@ -297,3 +297,314 @@ Make sure your files are arranged like this:
 ```
 
 Then clicking **💻 View My Code** on `index.html` will open your `code.html`.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Image Board</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #101a3a, #182b5c);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .welcome {
+            text-align: center;
+            padding: 50px 20px 30px;
+        }
+
+        .welcome h1 {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .welcome p {
+            font-size: 20px;
+            color: #b9c9ff;
+        }
+
+        .buttons {
+            text-align: center;
+            margin: 20px auto 40px;
+        }
+
+        .page-button {
+            display: inline-block;
+            padding: 13px 22px;
+            margin: 8px;
+            background: #4d8dff;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .page-button:hover {
+            background: #70a6ff;
+            transform: scale(1.05);
+        }
+
+        .game-button {
+            background: #27b94b;
+        }
+
+        .game-button:hover {
+            background: #43d866;
+        }
+
+        .upload-box {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px dashed #6ea8ff;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            margin: 0 auto 50px;
+            text-align: center;
+        }
+
+        .upload-box label {
+            display: inline-block;
+            background: #4d8dff;
+            padding: 14px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .upload-box label:hover {
+            background: #70a6ff;
+            transform: scale(1.05);
+        }
+
+        #imageInput {
+            display: none;
+        }
+
+        #imageBoard {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 25px;
+            padding: 0 40px 50px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .image-card {
+            background: #111d40;
+            padding: 12px;
+            border-radius: 18px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            transition: 0.25s;
+        }
+
+        .image-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 12px;
+            display: block;
+        }
+
+        .delete-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 9px;
+            border: none;
+            border-radius: 10px;
+            background: #e34b5f;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background: #ff6678;
+        }
+
+        .empty {
+            text-align: center;
+            color: #9eadd4;
+            font-size: 18px;
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Welcome -->
+    <section class="welcome">
+        <h1>🖼️ Welcome to My Image Board!</h1>
+        <p>Upload your favorite pictures and create your own collection.</p>
+    </section>
+
+    <!-- Navigation Buttons -->
+    <div class="buttons">
+
+        <a href="code.html" class="page-button">
+            💻 View My Code
+        </a>
+
+        <a href="game.html" class="page-button game-button">
+            🎮 Play Game
+        </a>
+
+    </div>
+
+    <!-- Upload -->
+    <div class="upload-box">
+
+        <label for="imageInput">
+            ➕ Add an Image
+        </label>
+
+        <input type="file" id="imageInput" accept="image/*">
+
+        <p>Your images will be saved automatically 💾</p>
+
+    </div>
+
+    <!-- Image Board -->
+    <div id="imageBoard">
+
+        <div class="empty" id="emptyMessage">
+            Your image board is empty. Add your first picture! 📸
+        </div>
+
+    </div>
+
+    <script>
+
+        const input = document.getElementById("imageInput");
+        const board = document.getElementById("imageBoard");
+        const emptyMessage = document.getElementById("emptyMessage");
+
+        let savedImages =
+            JSON.parse(localStorage.getItem("myImages")) || [];
+
+
+        function showImages() {
+
+            board.querySelectorAll(".image-card")
+                .forEach(card => card.remove());
+
+
+            if (savedImages.length === 0) {
+
+                emptyMessage.style.display = "block";
+
+            } else {
+
+                emptyMessage.style.display = "none";
+
+            }
+
+
+            savedImages.forEach(function(image, index) {
+
+                const card = document.createElement("div");
+
+                card.className = "image-card";
+
+
+                const img = document.createElement("img");
+
+                img.src = image;
+
+
+                const deleteButton =
+                    document.createElement("button");
+
+                deleteButton.className = "delete-btn";
+
+                deleteButton.textContent = "🗑️ Delete";
+
+
+                deleteButton.addEventListener("click", function() {
+
+                    savedImages.splice(index, 1);
+
+
+                    localStorage.setItem(
+                        "myImages",
+                        JSON.stringify(savedImages)
+                    );
+
+
+                    showImages();
+
+                });
+
+
+                card.appendChild(img);
+
+                card.appendChild(deleteButton);
+
+                board.appendChild(card);
+
+            });
+
+        }
+
+
+        input.addEventListener("change", function() {
+
+            const file = input.files[0];
+
+
+            if (file) {
+
+                const reader = new FileReader();
+
+
+                reader.onload = function(event) {
+
+                    savedImages.push(event.target.result);
+
+
+                    localStorage.setItem(
+                        "myImages",
+                        JSON.stringify(savedImages)
+                    );
+
+
+                    showImages();
+
+                };
+
+
+                reader.readAsDataURL(file);
+
+
+                input.value = "";
+
+            }
+
+        });
+
+
+        showImages();
+
+    </script>
+
+</body>
+</html>
+```
+
