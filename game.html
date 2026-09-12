@@ -1,0 +1,818 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Dash</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #70d9ff;
+            font-family: Arial, sans-serif;
+        }
+
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            image-rendering: pixelated;
+        }
+
+        #info {
+            position: fixed;
+            top: 15px;
+            left: 20px;
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+            text-shadow: 3px 3px #17416b;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        #message {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.65);
+            color: white;
+            z-index: 5;
+            text-align: center;
+        }
+
+        #message h1 {
+            font-size: 60px;
+            margin: 10px;
+        }
+
+        #message p {
+            font-size: 22px;
+        }
+
+        button {
+            background: #ffcc22;
+            border: 4px solid #b06c00;
+            border-radius: 12px;
+            padding: 12px 25px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+
+<div id="info">
+    🟡 Rings: <span id="rings">0</span>
+    &nbsp;&nbsp;
+    ❤️ Lives: <span id="lives">3</span>
+</div>
+
+<div id="message">
+    <h1 id="messageTitle">YOU WIN!</h1>
+    <p id="messageText">You reached the goal!</p>
+    <button onclick="restart()">Play Again</button>
+</div>
+
+<script>
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+canvas.width = 1200;
+canvas.height = 650;
+
+const ringsText = document.getElementById("rings");
+const livesText = document.getElementById("lives");
+const message = document.getElementById("message");
+const messageTitle = document.getElementById("messageTitle");
+const messageText = document.getElementById("messageText");
+
+const keys = {};
+
+document.addEventListener("keydown", e => {
+    keys[e.key.toLowerCase()] = true;
+
+    if (e.key === " " || e.key === "ArrowUp") {
+        e.preventDefault();
+    }
+});
+
+document.addEventListener("keyup", e => {
+    keys[e.key.toLowerCase()] = false;
+});
+
+
+let player;
+let rings;
+let enemies;
+let platforms;
+let springs;
+let cameraX;
+let gameOver;
+
+
+function restart() {
+
+    player = {
+        x: 100,
+        y: 400,
+        width: 38,
+        height: 48,
+        vx: 0,
+        vy: 0,
+        speed: 0.7,
+        maxSpeed: 12,
+        jump: -16,
+        grounded: false,
+        invincible: 0
+    };
+
+    rings = [
+        {x: 350, y: 430},
+        {x: 390, y: 430},
+        {x: 430, y: 430},
+
+        {x: 650, y: 350},
+        {x: 690, y: 350},
+        {x: 730, y: 350},
+
+        {x: 1050, y: 420},
+        {x: 1090, y: 420},
+        {x: 1130, y: 420},
+
+        {x: 1450, y: 300},
+        {x: 1490, y: 300},
+        {x: 1530, y: 300},
+
+        {x: 1900, y: 400},
+        {x: 1940, y: 400},
+        {x: 1980, y: 400},
+
+        {x: 2450, y: 300},
+        {x: 2490, y: 300},
+        {x: 2530, y: 300}
+    ];
+
+    enemies = [
+        {x: 800, y: 452, width: 40, height: 35, vx: 1},
+        {x: 1250, y: 402, width: 40, height: 35, vx: -1},
+        {x: 1750, y: 452, width: 40, height: 35, vx: 1},
+        {x: 2200, y: 452, width: 40, height: 35, vx: -1}
+    ];
+
+    platforms = [
+        {x: 0, y: 500, width: 700, height: 150},
+        {x: 780, y: 500, width: 500, height: 150},
+        {x: 1380, y: 500, width: 500, height: 150},
+        {x: 1980, y: 500, width: 600, height: 150},
+
+        {x: 580, y: 420, width: 180, height: 30},
+        {x: 1000, y: 400, width: 220, height: 30},
+        {x: 1400, y: 350, width: 250, height: 30},
+        {x: 1850, y: 400, width: 200, height: 30},
+        {x: 2350, y: 350, width: 250, height: 30}
+    ];
+
+    springs = [
+        {x: 520, y: 465},
+        {x: 1180, y: 465},
+        {x: 1640, y: 465},
+        {x: 2300, y: 465}
+    ];
+
+    cameraX = 0;
+    gameOver = false;
+
+    ringsText.textContent = "0";
+    livesText.textContent = "3";
+
+    message.style.display = "none";
+}
+
+restart();
+
+
+function update() {
+
+    if (gameOver) return;
+
+    // Movement
+
+    if (keys["arrowright"] || keys["d"]) {
+        player.vx += player.speed;
+    }
+
+    if (keys["arrowleft"] || keys["a"]) {
+        player.vx -= player.speed;
+    }
+
+    // Friction
+
+    if (!keys["arrowright"] &&
+        !keys["d"] &&
+        !keys["arrowleft"] &&
+        !keys["a"]) {
+
+        player.vx *= 0.88;
+    }
+
+    // Maximum speed
+
+    if (player.vx > player.maxSpeed) {
+        player.vx = player.maxSpeed;
+    }
+
+    if (player.vx < -player.maxSpeed) {
+        player.vx = -player.maxSpeed;
+    }
+
+    // Jump
+
+    if ((keys[" "] ||
+        keys["arrowup"] ||
+        keys["w"]) &&
+        player.grounded) {
+
+        player.vy = player.jump;
+        player.grounded = false;
+    }
+
+    // Gravity
+
+    player.vy += 0.7;
+
+    player.x += player.vx;
+    player.y += player.vy;
+
+    player.grounded = false;
+
+
+    // Platform collisions
+
+    for (const platform of platforms) {
+
+        if (
+            player.x < platform.x + platform.width &&
+            player.x + player.width > platform.x &&
+            player.y + player.height > platform.y &&
+            player.y + player.height < platform.y + 35 &&
+            player.vy >= 0
+        ) {
+
+            player.y = platform.y - player.height;
+            player.vy = 0;
+            player.grounded = true;
+        }
+    }
+
+
+    // Springs
+
+    for (const spring of springs) {
+
+        if (
+            player.x + player.width > spring.x &&
+            player.x < spring.x + 40 &&
+            player.y + player.height > spring.y &&
+            player.y + player.height < spring.y + 30
+        ) {
+
+            player.vy = -23;
+            player.grounded = false;
+        }
+    }
+
+
+    // Collect rings
+
+    for (let i = rings.length - 1; i >= 0; i--) {
+
+        const ring = rings[i];
+
+        const dx =
+            player.x + player.width / 2 - ring.x;
+
+        const dy =
+            player.y + player.height / 2 - ring.y;
+
+        if (Math.sqrt(dx * dx + dy * dy) < 35) {
+
+            rings.splice(i, 1);
+
+            ringsText.textContent =
+                Number(ringsText.textContent) + 1;
+        }
+    }
+
+
+    // Enemies
+
+    for (const enemy of enemies) {
+
+        enemy.x += enemy.vx;
+
+        if (enemy.x < 700 || enemy.x > 2500) {
+            enemy.vx *= -1;
+        }
+
+        if (
+            player.x < enemy.x + enemy.width &&
+            player.x + player.width > enemy.x &&
+            player.y < enemy.y + enemy.height &&
+            player.y + player.height > enemy.y
+        ) {
+
+            if (player.vy > 0 &&
+                player.y + player.height < enemy.y + 20) {
+
+                player.vy = -12;
+
+                enemy.x = -100;
+
+            } else if (player.invincible <= 0) {
+
+                let lives =
+                    Number(livesText.textContent);
+
+                lives--;
+
+                livesText.textContent = lives;
+
+                player.invincible = 120;
+
+                player.vx = -8;
+                player.vy = -10;
+
+                if (lives <= 0) {
+                    lose();
+                }
+            }
+        }
+    }
+
+
+    if (player.invincible > 0) {
+        player.invincible--;
+    }
+
+
+    // Fall off map
+
+    if (player.y > 750) {
+
+        let lives =
+            Number(livesText.textContent);
+
+        lives--;
+
+        livesText.textContent = lives;
+
+        if (lives <= 0) {
+            lose();
+        } else {
+            player.x = cameraX + 100;
+            player.y = 300;
+            player.vx = 0;
+            player.vy = 0;
+        }
+    }
+
+
+    // Camera
+
+    cameraX = player.x - 250;
+
+    if (cameraX < 0) {
+        cameraX = 0;
+    }
+
+
+    // Goal
+
+    if (player.x > 2500) {
+        win();
+    }
+}
+
+
+function drawBackground() {
+
+    // Sky
+
+    ctx.fillStyle = "#70d9ff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+
+    // Clouds
+
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+
+    for (let i = 0; i < 10; i++) {
+
+        let x =
+            i * 350 - cameraX * 0.2;
+
+        ctx.beginPath();
+
+        ctx.arc(x, 120, 35, 0, Math.PI * 2);
+        ctx.arc(x + 40, 110, 45, 0, Math.PI * 2);
+        ctx.arc(x + 85, 125, 30, 0, Math.PI * 2);
+
+        ctx.fill();
+    }
+
+
+    // Mountains
+
+    ctx.fillStyle = "#56b98b";
+
+    for (let i = 0; i < 8; i++) {
+
+        let x =
+            i * 400 - cameraX * 0.4;
+
+        ctx.beginPath();
+
+        ctx.moveTo(x, 500);
+        ctx.lineTo(x + 180, 230);
+        ctx.lineTo(x + 350, 500);
+
+        ctx.fill();
+    }
+}
+
+
+function drawPlatforms() {
+
+    for (const platform of platforms) {
+
+        let x = platform.x - cameraX;
+
+        if (x + platform.width < 0 ||
+            x > canvas.width) {
+            continue;
+        }
+
+        // Dirt
+
+        ctx.fillStyle = "#a95b32";
+
+        ctx.fillRect(
+            x,
+            platform.y,
+            platform.width,
+            platform.height
+        );
+
+        // Grass
+
+        ctx.fillStyle = "#35b84b";
+
+        ctx.fillRect(
+            x,
+            platform.y,
+            platform.width,
+            15
+        );
+
+        // Checkered dirt
+
+        ctx.fillStyle = "#7d4228";
+
+        for (let xx = x; xx < x + platform.width; xx += 40) {
+
+            ctx.fillRect(
+                xx,
+                platform.y + 25,
+                20,
+                20
+            );
+        }
+    }
+}
+
+
+function drawRings() {
+
+    for (const ring of rings) {
+
+        let x = ring.x - cameraX;
+
+        if (x < -50 || x > canvas.width + 50) {
+            continue;
+        }
+
+        ctx.strokeStyle = "#ffd900";
+        ctx.lineWidth = 6;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            ring.y,
+            13,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.stroke();
+    }
+}
+
+
+function drawEnemies() {
+
+    for (const enemy of enemies) {
+
+        let x = enemy.x - cameraX;
+
+        if (x < -50 || x > canvas.width + 50) {
+            continue;
+        }
+
+        // Body
+
+        ctx.fillStyle = "#d83b32";
+
+        ctx.fillRect(
+            x,
+            enemy.y,
+            enemy.width,
+            enemy.height
+        );
+
+        // Eyes
+
+        ctx.fillStyle = "white";
+
+        ctx.fillRect(x + 8, enemy.y + 7, 8, 8);
+        ctx.fillRect(x + 24, enemy.y + 7, 8, 8);
+
+        ctx.fillStyle = "black";
+
+        ctx.fillRect(x + 11, enemy.y + 9, 4, 4);
+        ctx.fillRect(x + 27, enemy.y + 9, 4, 4);
+
+        // Feet
+
+        ctx.fillStyle = "#222";
+
+        ctx.fillRect(
+            x - 5,
+            enemy.y + enemy.height - 5,
+            15,
+            10
+        );
+
+        ctx.fillRect(
+            x + enemy.width - 10,
+            enemy.y + enemy.height - 5,
+            15,
+            10
+        );
+    }
+}
+
+
+function drawSprings() {
+
+    for (const spring of springs) {
+
+        let x = spring.x - cameraX;
+
+        ctx.fillStyle = "#e32c38";
+
+        ctx.fillRect(
+            x,
+            spring.y,
+            40,
+            15
+        );
+
+        ctx.fillStyle = "#ffd72e";
+
+        ctx.fillRect(
+            x + 5,
+            spring.y - 10,
+            30,
+            10
+        );
+    }
+}
+
+
+function drawPlayer() {
+
+    if (player.invincible > 0 &&
+        Math.floor(player.invincible / 5) % 2 === 0) {
+        return;
+    }
+
+    let x = player.x - cameraX;
+    let y = player.y;
+
+    // Shadow
+
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        x + 19,
+        y + 49,
+        25,
+        7,
+        0,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    // Body
+
+    ctx.fillStyle = "#176cff";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x + 19,
+        y + 22,
+        21,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    // Spikes
+
+    ctx.fillStyle = "#0b4fc4";
+
+    ctx.beginPath();
+
+    ctx.moveTo(x + 3, y + 10);
+    ctx.lineTo(x - 15, y + 5);
+    ctx.lineTo(x + 2, y + 20);
+
+    ctx.moveTo(x + 7, y + 5);
+    ctx.lineTo(x - 5, y - 12);
+    ctx.lineTo(x + 15, y + 8);
+
+    ctx.fill();
+
+
+    // Face
+
+    ctx.fillStyle = "#ffd3a3";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x + 25,
+        y + 25,
+        13,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    // Eye
+
+    ctx.fillStyle = "black";
+
+    ctx.fillRect(
+        x + 29,
+        y + 18,
+        4,
+        6
+    );
+
+
+    // Shoes
+
+    ctx.fillStyle = "#e52e35";
+
+    ctx.fillRect(
+        x - 2,
+        y + 40,
+        19,
+        9
+    );
+
+    ctx.fillRect(
+        x + 20,
+        y + 40,
+        19,
+        9
+    );
+
+    ctx.fillStyle = "white";
+
+    ctx.fillRect(
+        x + 1,
+        y + 40,
+        15,
+        4
+    );
+
+    ctx.fillRect(
+        x + 22,
+        y + 40,
+        15,
+        4
+    );
+}
+
+
+function drawGoal() {
+
+    let x = 2600 - cameraX;
+
+    ctx.fillStyle = "#222";
+    ctx.fillRect(x, 300, 10, 200);
+
+    ctx.fillStyle = "#ffdd22";
+
+    ctx.beginPath();
+
+    ctx.moveTo(x + 10, 310);
+    ctx.lineTo(x + 100, 340);
+    ctx.lineTo(x + 10, 370);
+
+    ctx.fill();
+}
+
+
+function draw() {
+
+    drawBackground();
+    drawPlatforms();
+    drawRings();
+    drawSprings();
+    drawEnemies();
+    drawGoal();
+    drawPlayer();
+}
+
+
+function gameLoop() {
+
+    update();
+    draw();
+
+    requestAnimationFrame(gameLoop);
+}
+
+
+function win() {
+
+    gameOver = true;
+
+    messageTitle.textContent = "🏆 YOU WIN!";
+    messageText.textContent =
+        "You reached the goal with " +
+        ringsText.textContent +
+        " rings!";
+
+    message.style.display = "flex";
+}
+
+
+function lose() {
+
+    gameOver = true;
+
+    messageTitle.textContent = "💥 GAME OVER!";
+    messageText.textContent =
+        "You ran out of lives!";
+
+    message.style.display = "flex";
+}
+
+
+gameLoop();
+
+</script>
+
+</body>
+</html>
+```
