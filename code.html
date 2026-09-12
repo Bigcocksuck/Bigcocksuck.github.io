@@ -1,25 +1,302 @@
 ```html
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My Code</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Python Code</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #101a3a, #182b5c);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            padding: 50px 20px 25px;
+        }
+
+        .header h1 {
+            font-size: 45px;
+            margin: 0 0 10px;
+        }
+
+        .header p {
+            color: #b9c9ff;
+            font-size: 18px;
+        }
+
+        .date {
+            color: #70a6ff;
+            font-weight: bold;
+        }
+
+        .code-box {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #0b1025;
+            border: 2px solid #4d8dff;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .top-bar {
+            background: #182342;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff5f56;
+        }
+
+        .dot:nth-child(2) {
+            background: #ffbd2e;
+        }
+
+        .dot:nth-child(3) {
+            background: #27c93f;
+        }
+
+        .filename {
+            margin-left: 10px;
+            color: #b9c9ff;
+            font-weight: bold;
+        }
+
+        pre {
+            margin: 0;
+            padding: 30px;
+            font-size: 18px;
+            line-height: 1.7;
+            overflow-x: auto;
+            color: #e6eeff;
+        }
+
+        .keyword {
+            color: #ff79c6;
+        }
+
+        .function {
+            color: #50fa7b;
+        }
+
+        .button-area {
+            text-align: center;
+            margin: 30px;
+        }
+
+        button,
+        .back-button {
+            border: none;
+            padding: 13px 22px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 8px;
+        }
+
+        .copy-button {
+            background: #4d8dff;
+            color: white;
+        }
+
+        .copy-button:hover {
+            background: #70a6ff;
+        }
+
+        .back-button {
+            background: #27365f;
+            color: white;
+        }
+
+        .back-button:hover {
+            background: #3c4f80;
+        }
+
+        /* Donkeys */
+
+        .donkey {
+            position: fixed;
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 20px;
+            border: 4px solid #6ea8ff;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            z-index: -1;
+        }
+
+        .donkey1 {
+            top: 30px;
+            left: 20px;
+            transform: rotate(-8deg);
+        }
+
+        .donkey2 {
+            top: 180px;
+            right: 20px;
+            transform: rotate(8deg);
+        }
+
+        .donkey3 {
+            bottom: 30px;
+            left: 30px;
+            transform: rotate(7deg);
+        }
+
+        .donkey4 {
+            bottom: 80px;
+            right: 30px;
+            transform: rotate(-7deg);
+        }
+
+        .donkey5 {
+            top: 450px;
+            left: 5px;
+            transform: rotate(-12deg);
+        }
+
+        .donkey6 {
+            top: 550px;
+            right: 5px;
+            transform: rotate(12deg);
+        }
+
+        .donkey-text {
+            text-align: center;
+            font-size: 25px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .donkey {
+                width: 80px;
+                height: 80px;
+            }
+
+            .code-box {
+                margin: 20px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-    <h1>Python Code</h1>
+    <!-- Random Donkeys -->
+    <img class="donkey donkey1"
+         src="https://loremflickr.com/200/200/donkey?random=1">
 
-    <p>Date: September 12, 2026</p>
+    <img class="donkey donkey2"
+         src="https://loremflickr.com/200/200/donkey?random=2">
 
-    <pre>
-a = int(input())
+    <img class="donkey donkey3"
+         src="https://loremflickr.com/200/200/donkey?random=3">
+
+    <img class="donkey donkey4"
+         src="https://loremflickr.com/200/200/donkey?random=4">
+
+    <img class="donkey donkey5"
+         src="https://loremflickr.com/200/200/donkey?random=5">
+
+    <img class="donkey donkey6"
+         src="https://loremflickr.com/200/200/donkey?random=6">
+
+
+    <!-- Header -->
+    <div class="header">
+
+        <h1>💻 My Python Code 🫏</h1>
+
+        <p>
+            Python Code Project
+        </p>
+
+        <p class="date">
+            📅 September 12, 2026
+        </p>
+
+    </div>
+
+
+    <!-- Code -->
+    <div class="code-box">
+
+        <div class="top-bar">
+
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+
+            <span class="filename">
+                main.py
+            </span>
+
+        </div>
+
+        <pre id="pythonCode">a = int(input())
 b = int(input())
 c = int(input())
 
-print(a*3+b*4+c*5)
-    </pre>
+print(a*3+b*4+c*5)</pre>
+
+    </div>
+
+
+    <!-- Buttons -->
+    <div class="button-area">
+
+        <button class="copy-button" onclick="copyCode()">
+            📋 Copy Code
+        </button>
+
+        <a href="index.html" class="back-button">
+            🖼️ Back to Image Board
+        </a>
+
+    </div>
+
+
+    <div class="donkey-text">
+        🫏🫏🫏 THE DONKEY CODE 🫏🫏🫏
+    </div>
+
+
+    <script>
+
+        function copyCode() {
+
+            const code =
+                document.getElementById("pythonCode").innerText;
+
+            navigator.clipboard.writeText(code);
+
+            alert("✅ Code copied!");
+
+        }
+
+    </script>
 
 </body>
 </html>
 ```
-
