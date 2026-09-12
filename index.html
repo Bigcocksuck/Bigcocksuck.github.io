@@ -19,7 +19,6 @@
             min-height: 100vh;
         }
 
-        /* Welcome Page */
         .welcome {
             text-align: center;
             padding: 70px 20px 50px;
@@ -35,7 +34,6 @@
             color: #b9c9ff;
         }
 
-        /* Upload Area */
         .upload-box {
             background: rgba(255, 255, 255, 0.08);
             border: 2px dashed #6ea8ff;
@@ -65,7 +63,6 @@
             display: none;
         }
 
-        /* Image Board */
         #imageBoard {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -85,7 +82,6 @@
 
         .image-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
         }
 
         .image-card img {
@@ -123,13 +119,11 @@
 
 <body>
 
-    <!-- Welcome Section -->
     <section class="welcome">
         <h1>🖼️ Welcome to My Image Board!</h1>
         <p>Upload your favorite pictures and create your own collection.</p>
     </section>
 
-    <!-- Upload Section -->
     <div class="upload-box">
         <label for="imageInput">
             ➕ Add an Image
@@ -137,10 +131,9 @@
 
         <input type="file" id="imageInput" accept="image/*">
 
-        <p>Choose an image from your computer</p>
+        <p>Your images will be saved automatically 💾</p>
     </div>
 
-    <!-- Image Board -->
     <div id="imageBoard">
         <div class="empty" id="emptyMessage">
             Your image board is empty. Add your first picture! 📸
@@ -152,37 +145,69 @@
         const board = document.getElementById("imageBoard");
         const emptyMessage = document.getElementById("emptyMessage");
 
-        input.addEventListener("change", function() {
-            const file = input.files[0];
+        let savedImages = JSON.parse(localStorage.getItem("myImages")) || [];
 
-            if (file) {
+        function showImages() {
+            board.querySelectorAll(".image-card").forEach(card => card.remove());
+
+            if (savedImages.length === 0) {
+                emptyMessage.style.display = "block";
+            } else {
+                emptyMessage.style.display = "none";
+            }
+
+            savedImages.forEach(function(image, index) {
                 const card = document.createElement("div");
                 card.className = "image-card";
 
                 const img = document.createElement("img");
-                img.src = URL.createObjectURL(file);
+                img.src = image;
 
                 const deleteButton = document.createElement("button");
                 deleteButton.className = "delete-btn";
                 deleteButton.textContent = "🗑️ Delete";
 
                 deleteButton.addEventListener("click", function() {
-                    card.remove();
+                    savedImages.splice(index, 1);
 
-                    if (board.querySelectorAll(".image-card").length === 0) {
-                        emptyMessage.style.display = "block";
-                    }
+                    localStorage.setItem(
+                        "myImages",
+                        JSON.stringify(savedImages)
+                    );
+
+                    showImages();
                 });
 
                 card.appendChild(img);
                 card.appendChild(deleteButton);
                 board.appendChild(card);
+            });
+        }
 
-                emptyMessage.style.display = "none";
+        input.addEventListener("change", function() {
+            const file = input.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function(event) {
+                    savedImages.push(event.target.result);
+
+                    localStorage.setItem(
+                        "myImages",
+                        JSON.stringify(savedImages)
+                    );
+
+                    showImages();
+                };
+
+                reader.readAsDataURL(file);
 
                 input.value = "";
             }
         });
+
+        showImages();
     </script>
 
 </body>
