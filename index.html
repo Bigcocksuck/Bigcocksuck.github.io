@@ -1,18 +1,190 @@
-<input type="file" id="imageInput" accept="image/*">
-<div id="imageBoard"></div>
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Image Board</title>
 
-<script>
-const input = document.getElementById("imageInput");
-const board = document.getElementById("imageBoard");
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-input.addEventListener("change", function() {
-    const file = input.files[0];
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #101a3a, #182b5c);
+            color: white;
+            min-height: 100vh;
+        }
 
-    if (file) {
-        const img = document.createElement("img");
-        img.src = URL.createObjectURL(file);
-        img.style.width = "200px";
-        board.appendChild(img);
-    }
-});
-</script>
+        /* Welcome Page */
+        .welcome {
+            text-align: center;
+            padding: 70px 20px 50px;
+        }
+
+        .welcome h1 {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .welcome p {
+            font-size: 20px;
+            color: #b9c9ff;
+        }
+
+        /* Upload Area */
+        .upload-box {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px dashed #6ea8ff;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            margin: 0 auto 50px;
+            text-align: center;
+        }
+
+        .upload-box label {
+            display: inline-block;
+            background: #4d8dff;
+            padding: 14px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .upload-box label:hover {
+            background: #70a6ff;
+            transform: scale(1.05);
+        }
+
+        #imageInput {
+            display: none;
+        }
+
+        /* Image Board */
+        #imageBoard {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 25px;
+            padding: 0 40px 50px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .image-card {
+            background: #111d40;
+            padding: 12px;
+            border-radius: 18px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            transition: 0.25s;
+        }
+
+        .image-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 12px;
+            display: block;
+        }
+
+        .delete-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 9px;
+            border: none;
+            border-radius: 10px;
+            background: #e34b5f;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background: #ff6678;
+        }
+
+        .empty {
+            text-align: center;
+            color: #9eadd4;
+            font-size: 18px;
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Welcome Section -->
+    <section class="welcome">
+        <h1>🖼️ Welcome to My Image Board!</h1>
+        <p>Upload your favorite pictures and create your own collection.</p>
+    </section>
+
+    <!-- Upload Section -->
+    <div class="upload-box">
+        <label for="imageInput">
+            ➕ Add an Image
+        </label>
+
+        <input type="file" id="imageInput" accept="image/*">
+
+        <p>Choose an image from your computer</p>
+    </div>
+
+    <!-- Image Board -->
+    <div id="imageBoard">
+        <div class="empty" id="emptyMessage">
+            Your image board is empty. Add your first picture! 📸
+        </div>
+    </div>
+
+    <script>
+        const input = document.getElementById("imageInput");
+        const board = document.getElementById("imageBoard");
+        const emptyMessage = document.getElementById("emptyMessage");
+
+        input.addEventListener("change", function() {
+            const file = input.files[0];
+
+            if (file) {
+                const card = document.createElement("div");
+                card.className = "image-card";
+
+                const img = document.createElement("img");
+                img.src = URL.createObjectURL(file);
+
+                const deleteButton = document.createElement("button");
+                deleteButton.className = "delete-btn";
+                deleteButton.textContent = "🗑️ Delete";
+
+                deleteButton.addEventListener("click", function() {
+                    card.remove();
+
+                    if (board.querySelectorAll(".image-card").length === 0) {
+                        emptyMessage.style.display = "block";
+                    }
+                });
+
+                card.appendChild(img);
+                card.appendChild(deleteButton);
+                board.appendChild(card);
+
+                emptyMessage.style.display = "none";
+
+                input.value = "";
+            }
+        });
+    </script>
+
+</body>
+</html>
+```
